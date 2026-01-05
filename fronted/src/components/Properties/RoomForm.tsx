@@ -1,0 +1,554 @@
+// 'use client';
+
+// import React, { useState, useEffect } from 'react';
+
+// interface RoomType {
+//   _id: string;
+//   name: string;
+// }
+
+// interface RoomFormProps {
+//   onSuccess?: () => void;
+//   isEditMode?: boolean;
+//   roomData?: {
+//     _id: string;
+//     name: string;
+//     description: string;
+//     rate: string;
+//     beds: number;
+//     baths: number;
+//     area: number;
+//     availability: string;
+//     status: string;
+//     capacity: number;
+//     roomType: string;
+//     images: string[];
+//   };
+// }
+
+// const RoomForm: React.FC<RoomFormProps> = ({ onSuccess, isEditMode = false, roomData }) => {
+//   const [name, setName] = useState('');
+//   const [description, setDescription] = useState('');
+//   const [beds, setBeds] = useState(1);
+//   const [baths, setBaths] = useState(1);
+//   const [area, setArea] = useState(0);
+//   const [capacity, setCapacity] = useState(1);
+//   const [roomType, setRoomType] = useState('');
+//   const [images, setImages] = useState<FileList | null>(null);
+//   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
+//   const [loading, setLoading] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
+//   const [success, setSuccess] = useState(false);
+
+//   // Initialize form with room data if in edit mode
+//   useEffect(() => {
+//     if (isEditMode && roomData) {
+//       setName(roomData.name);
+//       setDescription(roomData.description);
+//       setBeds(roomData.beds);
+//       setBaths(roomData.baths);
+//       setArea(roomData.area);
+//       setCapacity(roomData.capacity);
+//       setRoomType(roomData.roomType);
+//     }
+//   }, [isEditMode, roomData]);
+
+//   useEffect(() => {
+//     // Fetch room types for dropdown
+//     const fetchRoomTypes = async () => {
+//       try {
+//         const res = await fetch('http://localhost:3001/roomtypes/allroomtype');
+//         const data = await res.json();
+//         setRoomTypes(data.roomtype || []);
+//       } catch (err) {
+//         setRoomTypes([]);
+//       }
+//     };
+//     fetchRoomTypes();
+//   }, []);
+
+//   const handleSubmit = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     setError(null);
+//     setSuccess(false);
+
+//     if (!name || !description || !beds || !baths || !area || !capacity || !roomType) {
+//       setError('Please fill all required fields.');
+//       return;
+//     }
+
+//     // Only require images for new rooms, not for editing
+//     if (!isEditMode && !images) {
+//       setError('Please upload images.');
+//       return;
+//     }
+
+//     setLoading(true);
+//     try {
+//       const formData = new FormData();
+//       formData.append('name', name);
+//       formData.append('description', description);
+//       formData.append('beds', beds.toString());
+//       formData.append('baths', baths.toString());
+//       formData.append('area', area.toString());
+//       formData.append('capacity', capacity.toString());
+//       formData.append('roomType', roomType);
+
+//       if (images) {
+//         Array.from(images).forEach((img) => formData.append('images', img));
+//       }
+
+//       const url = isEditMode 
+//         ? `http://localhost:3001/update/${roomData?._id}`
+//         : 'http://localhost:3001/addroom';
+
+//       const method = isEditMode ? 'PUT' : 'POST';
+
+//       const res = await fetch(url, {
+//         method,
+//         body: formData,
+//       });
+
+//       if (!res.ok) throw new Error(`Failed to ${isEditMode ? 'update' : 'add'} room`);
+
+//       setSuccess(true);
+
+//       if (!isEditMode) {
+//         // Reset form only for new rooms
+//         setName('');
+//         setDescription('');
+//         setBeds(1);
+//         setBaths(1);
+//         setArea(0);
+//         setCapacity(1);
+//         setRoomType('');
+//         setImages(null);
+//       }
+
+//       if (onSuccess) onSuccess();
+//     } catch (err: any) {
+//       setError(err.message || 'Something went wrong');
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto p-4 border rounded">
+//       <h2 className="text-xl font-bold mb-2">{isEditMode ? 'Edit Room' : 'Add Room'}</h2>
+//       {error && <div className="text-red-500">{error}</div>}
+//       {success && <div className="text-green-600">Room {isEditMode ? 'updated' : 'added'} successfully!</div>}
+//       <div>
+//         <label className="block font-medium">Name *</label>
+//         <input
+//           type="text"
+//           value={name}
+//           onChange={e => setName(e.target.value)}
+//           className="w-full border px-2 py-1 rounded"
+//           required
+//         />
+//       </div>
+//       <div>
+//         <label className="block font-medium">Description *</label>
+//         <textarea
+//           value={description}
+//           onChange={e => setDescription(e.target.value)}
+//           className="w-full border px-2 py-1 rounded"
+//           required
+//         />
+//       </div>
+
+//       <div className="flex gap-2">
+//         <div className="flex-1">
+//           <label className="block font-medium">Beds *</label>
+//           <input
+//             type="number"
+//             min={1}
+//             value={beds}
+//             onChange={e => setBeds(Number(e.target.value))}
+//             className="w-full border px-2 py-1 rounded"
+//             required
+//           />
+//         </div>
+//         <div className="flex-1">
+//           <label className="block font-medium">Baths *</label>
+//           <input
+//             type="number"
+//             min={1}
+//             value={baths}
+//             onChange={e => setBaths(Number(e.target.value))}
+//             className="w-full border px-2 py-1 rounded"
+//             required
+//           />
+//         </div>
+//       </div>
+//       <div>
+//         <label className="block font-medium">Area (sq ft) *</label>
+//         <input
+//           type="number"
+//           min={0}
+//           value={area}
+//           onChange={e => setArea(Number(e.target.value))}
+//           className="w-full border px-2 py-1 rounded"
+//           required
+//         />
+//       </div>
+//       <div>
+//         <label className="block font-medium">Capacity *</label>
+//         <input
+//           type="number"
+//           min={1}
+//           value={capacity}
+//           onChange={e => setCapacity(Number(e.target.value))}
+//           className="w-full border px-2 py-1 rounded"
+//           required
+//         />
+//       </div>
+//       <div>
+//         <label className="block font-medium">Room Type *</label>
+//         <select
+//           value={roomType}
+//           onChange={e => setRoomType(e.target.value)}
+//           className="w-full border px-2 py-1 rounded bg-gray-100 dark:bg-gray-800"
+//           required
+//         >
+//           <option value="">Select Room Type</option>
+//           {roomTypes.map(rt => (
+//             <option key={rt._id} value={rt.name}>{rt.name}</option>
+//           ))}
+//         </select>
+//       </div>
+//       <div>
+//         <label className="block font-medium">Images {!isEditMode && '*'}</label>
+//         <input
+//           type="file"
+//           accept="image/*"
+//           multiple
+//           onChange={e => setImages(e.target.files)}
+//           className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 shadow-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+//           required={!isEditMode}
+//         />
+//         {isEditMode && (
+//           <p className="text-sm text-gray-500 mt-1">Leave empty to keep existing images</p>
+//         )}
+//       </div>
+//       <button
+//         type="submit"
+//         className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
+//         disabled={loading}
+//       >
+//         {loading ? (isEditMode ? 'Updating...' : 'Submitting...') : (isEditMode ? 'Update Room' : 'Add Room')}
+//       </button>
+//     </form>
+//   );
+// };
+
+// export default RoomForm; 
+
+
+
+
+
+
+
+
+
+
+'use client';
+
+import React, { useState, useEffect, ChangeEvent } from 'react';
+
+interface RoomType {
+  _id: string;
+  name: string;
+}
+
+interface RoomFormProps {
+  onSuccess?: () => void;
+  isEditMode?: boolean;
+  roomData?: {
+    _id: string;
+    name: string;
+    description: string;
+    // rate: string;
+    beds: number;
+    baths: number;
+    area: number;
+    availability: string;
+    status: string;
+    capacity: number;
+    roomType: string;
+    images: string[];
+  };
+}
+
+const RoomForm: React.FC<RoomFormProps> = ({ onSuccess, isEditMode = false, roomData }) => {
+
+  // ------------------ FORM STATES ------------------
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [beds, setBeds] = useState(1);
+  const [baths, setBaths] = useState(1);
+  const [area, setArea] = useState(0);
+  const [capacity, setCapacity] = useState(1);
+  const [roomType, setRoomType] = useState('');
+  const [images, setImages] = useState<FileList | null>(null);
+
+  const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  // ------------------ PREFILL EDIT MODE ------------------
+  useEffect(() => {
+    if (isEditMode && roomData) {
+      setName(roomData.name);
+      setDescription(roomData.description);
+      setBeds(roomData.beds);
+      setBaths(roomData.baths);
+      setArea(roomData.area);
+      setCapacity(roomData.capacity);
+      setRoomType(roomData.roomType);
+    }
+  }, [isEditMode, roomData]);
+
+  // ------------------ GET ROOM TYPES ------------------
+  useEffect(() => {
+    const fetchRoomTypes = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/roomtypes/limited");
+        if (!res.ok) throw new Error("Failed to fetch room types");
+        const data = await res.json();
+
+        // backend returns { roomtype: [] }
+        setRoomTypes(data.roomtype || []);
+
+      } catch (err) {
+        console.error("Room types error:", err);
+        setRoomTypes([]);
+      }
+    };
+
+    fetchRoomTypes();
+  }, []);
+
+  // ------------------ SUBMIT FORM ------------------
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setError(null);
+    setSuccess(false);
+
+    if (!name || !description || !beds || !baths || !area || !capacity || !roomType) {
+      setError("Please fill all required fields.");
+      return;
+    }
+
+    if (!isEditMode && !images) {
+      setError("Please upload images.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // const formData = new FormData();
+      // formData.append("name", name);
+      // formData.append("description", description);
+      // formData.append("beds", beds.toString());
+      // formData.append("baths", baths.toString());
+      // formData.append("area", area.toString());
+      // formData.append("capacity", capacity.toString());
+      // formData.append("roomType", roomType);
+
+      // if (images) {
+      //   Array.from(images).forEach((img) => formData.append("images", img));
+      // }
+
+
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("description", description);
+      formData.append("beds", beds.toString());
+      formData.append("baths", baths.toString());
+      formData.append("area", area.toString());
+      formData.append("capacity", capacity.toString());
+
+      // Send the ROOM TYPE NAME instead of ID
+      const selectedRoomType = roomTypes.find(rt => rt._id === roomType)?.name || "";
+      formData.append("roomType", selectedRoomType);
+
+      if (images) {
+        Array.from(images).forEach((img) => formData.append("images", img));
+      }
+
+
+      // const url = isEditMode
+      // ? `http://localhost:3001/updateroom/${roomData?._id}`
+
+      const url = isEditMode
+        ? `http://localhost:3001/update/${roomData?._id}`
+        : "http://localhost:3001/addroom";
+
+
+      const method = isEditMode ? "PUT" : "POST";
+
+
+
+      const res = await fetch(url, {
+        method,
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error(isEditMode ? "Update failed" : "Create failed");
+
+      setSuccess(true);
+
+      if (!isEditMode) {
+        setName("");
+        setDescription("");
+        setBeds(1);
+        setBaths(1);
+        setArea(0);
+        setCapacity(1);
+        setRoomType("");
+        setImages(null);
+      }
+
+      onSuccess?.();
+
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ------------------ SELECT HANDLER ------------------
+  const handleRoomTypeChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setRoomType(e.target.value);
+  };
+
+  // ----------------------------------------------------
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto p-4 border rounded">
+
+      <h2 className="text-xl font-bold mb-2">
+        {isEditMode ? "Edit Room" : "Add Room"}
+      </h2>
+
+      {error && <div className="text-red-600">{error}</div>}
+      {success && <div className="text-green-600">Success!</div>}
+
+      {/* NAME */}
+      <div>
+        <label className="font-medium">Name *</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full border px-2 py-1 rounded"
+        />
+      </div>
+
+      {/* DESCRIPTION */}
+      <div>
+        <label className="font-medium">Description *</label>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full border px-2 py-1 rounded"
+        />
+      </div>
+
+      {/* BEDS & BATHS */}
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <label className="font-medium">Beds *</label>
+          <input
+            type="number"
+            value={beds}
+            onChange={(e) => setBeds(Number(e.target.value))}
+            className="w-full border px-2 py-1 rounded"
+          />
+        </div>
+
+        <div className="flex-1">
+          <label className="font-medium">Baths *</label>
+          <input
+            type="number"
+            value={baths}
+            onChange={(e) => setBaths(Number(e.target.value))}
+            className="w-full border px-2 py-1 rounded"
+          />
+        </div>
+      </div>
+
+      {/* AREA */}
+      <div>
+        <label className="font-medium">Area *</label>
+        <input
+          type="number"
+          value={area}
+          onChange={(e) => setArea(Number(e.target.value))}
+          className="w-full border px-2 py-1 rounded"
+        />
+      </div>
+
+      {/* CAPACITY */}
+      <div>
+        <label className="font-medium">Capacity *</label>
+        <input
+          type="number"
+          value={capacity}
+          onChange={(e) => setCapacity(Number(e.target.value))}
+          className="w-full border px-2 py-1 rounded"
+        />
+      </div>
+
+      {/* ROOM TYPE DROPDOWN */}
+      <div>
+        <label className="font-medium">Room Type *</label>
+        <select
+          value={roomType}
+          onChange={handleRoomTypeChange}
+          className="w-full border p-2 rounded"
+        >
+          <option value="">Select Room Type</option>
+          {roomTypes.map((type) => (
+            <option key={type._id} value={type._id}>
+              {type.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* IMAGES */}
+      <div>
+        <label className="font-medium">
+          Images {isEditMode ? "(optional)" : "*"}
+        </label>
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={(e) => setImages(e.target.files)}
+          className="w-full border px-2 py-1 rounded"
+          required={!isEditMode}
+        />
+      </div>
+
+      <button
+        type="submit"
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+        disabled={loading}
+      >
+        {loading ? "Please wait..." : isEditMode ? "Update Room" : "Add Room"}
+      </button>
+
+    </form>
+  );
+};
+
+export default RoomForm;
